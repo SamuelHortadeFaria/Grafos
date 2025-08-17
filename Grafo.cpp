@@ -5,84 +5,206 @@
 
 using namespace std;
 
-class Grafo{
+class Grafo
+{
 
-    //VARIAVEIS E LISTA PARA O GRAFO.
+    //--| VARIAVEIS E LISTA PARA O GRAFO. |--
 
-    private: 
-        vector<list<int>> adj; //Lista de Adjacencia
-        int size; //tamanho do array;
-    
-    public:
+private:
+    vector<list<int>> adj;                       // Lista de Adjacencia (COMUM SEM PESOS.)
+    vector<vector<pair<int, int>>> adjPonderado; // Lista de Adjaceancia | Usa-se pares de valores para representar "{v, w}".
+    int size;
 
-        //DECLARAÇÃO DE GRAFO
-        Grafo(int size){
+public:
+    //--| DECLARAÇÃO DE GRAFO |--
 
-            this->size = size;
-            this->adj.resize(size);
-        } //VIVE
+    // Construtor
+    Grafo(int size)
+    {
 
-        ~Grafo(){} //MORRE
+        this->size = size;
+        this->adj.resize(size);
+        this->adjPonderado.resize(size);
+    }
 
-        //ADIÇÃO DE VÉRTICE E ARESTA
-        void addVertice(int startVertice, int destino){
+    // Destrutor
+    ~Grafo() {}
 
-            adj[startVertice].push_back(destino); //Adiciona vértice
-            //adj[destino].push_back(startVertice); //Não direcionado
+    //--| ADIÇÃO DE ARESTA |--
+    void addEdge(int startVertice, int destino, bool direcionado)
+    {
+
+        adj[startVertice].push_back(destino); // Adiciona aresta de "startVertice" -> "destino"
+
+        if (direcionado)
+        {
+            adj[destino].push_back(startVertice); // Não direcionado (faz de "destino" -> "startVertice")
         }
+    }
 
-        //PRINTANDO O VÉRTICE
-        void printGraph(){
+    //--| ADIÇÃO DE ARESTA + PESO |--
+    void addEdgeWeight(int startVertice, int destino, int peso, bool direcionado)
+    {
 
-            for(int i = 0; i < this->size; i++){
+        adjPonderado[startVertice].push_back({destino, peso}); // Adiciona aresta de "startVertice" -> "destino" & PESO
 
-                cout << "O vértice " << i << " Aponta para: ";
-                
-                for(int v : adj[i]){
-                    cout << v << " ";
-                }
-                cout << endl;
+        if (direcionado)
+        {
+            adjPonderado[destino].push_back({startVertice, peso}); // Não direcionado (faz de "destino" -> "startVertice") & PESO
+        }
+    }
+
+    //--| PRINTANDO O GRAFO |--
+
+    // Grafo Comum
+    void printGraph()
+    {
+
+        for (int i = 0; i < this->size; i++)
+        {
+
+            cout << "O vértice " << i << " Aponta para: ";
+
+            for (int v : adj[i])
+            {
+                cout << v << " ";
             }
+            cout << endl;
         }
-        
-        //PROCURA EM LARGURA (BFS)
-        vector<int> BFS(int partida, int destino){ 
+    }
 
-            int i = partida;
-            vector<bool> visitados;
-            
-            //Fila para a visita.
-            queue<int> lista;
-            lista.push(partida);
+    // Grafo Ponderado
+    void printWeightGraph()
+    {
 
-            while(!lista.empty()){
+        for (int i = 0; i < this->size; i++)
+        {
 
-                if(visitados[i] != true){
-                    
-                    for(int v : adj[i]){
+            cout << "O vértice " << i << " Aponta para: ";
 
-                        lista.push(v);
-                        visitados[v] = true;
-                    }
-                    
-                    i++;
-                }
+            for (auto v : adjPonderado[i])
+            {
+                cout << "{" << v.first << ", " << v.second << "} ";
             }
+            cout << endl;
         }
+    }
 };
 
+int main()
+{
 
-int main(){
-    Grafo * g = new Grafo(5);
+    // Variaveis
+    int n = 0;
+    int input = 0;
 
-    g->addVertice(0, 1);
-    g->addVertice(0, 3);
-    g->addVertice(1, 2);
-    g->addVertice(3, 2);
-    g->addVertice(2, 4);
-    g->addVertice(2, 5);
-    g->addVertice(4, 5);
+    int u;
+    int v;
+    int w;
 
-    g->printGraph();
+    int InputDirecionado;
+    int InputPonderado;
 
+    bool direcionado;
+    bool ponderado;
+
+    //--| Input do usuário |--
+
+    // Definindo numero de vértices do grafo
+    cout << "Digite quantos vértices haverá em seu grafo." << endl;
+    cin >> n;
+
+    Grafo *g = new Grafo(n);
+
+    // Definindo se será direcionado ou não-direcionado.
+    // Loop para digitar 0 ou 1.
+    while (true)
+    {
+        cout << "Seu Grafo será direcionado?\nDigite 1 para 'Sim' ou 0 para 'Não': ";
+        cin >> InputDirecionado;
+
+        if (InputDirecionado == 0)
+        {
+            direcionado = false;
+            break;
+        }
+        else if (InputDirecionado == 1)
+        {
+            direcionado = true;
+            break;
+        }
+        else
+        {
+            cout << "Número inválido. Digite novamente." << endl;
+        }
+    }
+
+    // Definindo se será ponderado ou não.
+    while (true)
+    {
+        cout << "Seu Grafo será Ponderado?\nDigite 1 para 'Sim' ou 0 para 'Não': ";
+        cin >> InputPonderado;
+
+        if (InputPonderado == 0)
+        {
+            ponderado = false;
+            break;
+        }
+        else if (InputPonderado == 1)
+        {
+            ponderado = true;
+            break;
+        }
+        else
+        {
+            cout << "Número inválido. Digite novamente." << endl;
+        }
+    }
+
+    // Definindo as arestas
+    cout << "Agora defina a conexão dos vértices, de " << 0 << " à " << n - 1 << ". Digite '-1' para terminar." << endl;
+    do
+    {
+        cout << "Escreva o vértice u" << endl;
+        cin >> u;
+
+        cout << "Escreva o vértice v" << endl;
+        cin >> v;
+
+        // Terminando
+        if (u == -1 || v == -1)
+        {
+            break;
+        }
+
+        // Verificando se a entrada está dentro dos limites.
+        if (u >= n || v >= n)
+        {
+            cout << "Entradas fora do limite." << endl;
+            continue;
+        }
+
+        // Caso o grafo seja ponderado ou não.
+        if (ponderado == true)
+        {
+            cout << "Escreva o peso da aresta entre " << u << " e " << v << endl;
+            cin >> w;
+            g->addEdgeWeight(u, v, w, direcionado);
+        }
+        else
+        {
+            g->addEdge(u, v, direcionado);
+        }
+
+    } while (true);
+
+    if (ponderado == false)
+    {
+
+        g->printGraph();
+    }
+    else
+    {
+        g->printWeightGraph();
+    }
 }
